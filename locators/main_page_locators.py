@@ -16,6 +16,8 @@ class MainPageLocators:
     BUN_TAB = (By.XPATH, "//div[contains(@class, 'tab_tab__')]//span[text()='Булки']/parent::div")
     SAUCE_TAB = (By.XPATH, "//div[contains(@class, 'tab_tab__')]//span[text()='Соусы']/parent::div")
     FILLING_TAB = (By.XPATH, "//div[contains(@class, 'tab_tab__')]//span[text()='Начинки']/parent::div")
+    ORDER_IN_FEED = (By.XPATH, "//p[contains(@class,'text_type_digits')]")
+    TAB_ACTIVE_CLASS = "tab_tab_type_current"
 
 class ConstructorPageLocators:
 

@@ -3,13 +3,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import ElementClickInterceptedException
+from locators.main_page_locators import MainPageLocators
 
 
 class BasePage:
 
     default_timeout = 10
-
-    TAB_ACTIVE_CLASS = "tab_tab_type_current"
 
     def __init__(self, driver: WebDriver):
         self.driver = driver
@@ -47,11 +46,7 @@ class BasePage:
         target = self.normalize_order_number(number)
 
         def _find(driver):
-            elements = driver.find_elements(
-                "xpath",
-                "//p[contains(@class,'text_type_digits')]"
-            )
-
+            elements = driver.find_elements(MainPageLocators.ORDER_IN_FEED)
             normalized_numbers = []
 
             for el in elements:
@@ -107,7 +102,7 @@ class BasePage:
             self.driver.execute_script("arguments[0].click();", tab)
 
         self.wait_until(
-            lambda d: self.TAB_ACTIVE_CLASS in tab.get_attribute("class"),
+            lambda d: MainPageLocators.TAB_ACTIVE_CLASS in tab.get_attribute("class"),
             timeout
         )
 
