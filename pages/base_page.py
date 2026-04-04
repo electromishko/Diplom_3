@@ -13,14 +13,43 @@ class BasePage:
     def __init__(self, driver: WebDriver):
         self.driver = driver
 
+    def click_account_button(self):
+        self.click_element(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
+        return self
+
     def navigate(self, url):
         self.driver.get(url)
+
+    def get_feed_page(self):
+        from pages.feed_page import FeedPage
+        return FeedPage(self.driver)
+    
+    def go_to_profile(self):
+        self.click_account_button()
+
+    def get_profile_page(self):
+        from pages.profile_page import ProfilePage
+        return ProfilePage(self.driver)
+    
+    def get_history_order_page(self):
+        from pages.history_order_page import HistoryOrderPage
+        return HistoryOrderPage(self.driver)
+    
+    def get_login_page(self):
+        from pages.login_page import LoginPage
+        return LoginPage(self.driver)
 
     def get_current_url(self):
         return self.driver.current_url
 
     def wait_until(self, condition, timeout=10):
         return WebDriverWait(self.driver, timeout).until(condition)
+
+    def find_element(self, locator):
+        return self.driver.find_element(*locator)
+
+    def find_elements(self, locator):
+        return self.driver.find_elements(*locator)
 
     def wait_for_element_visible(self, locator, timeout=None):
         return WebDriverWait(self.driver, timeout or self.default_timeout).until(
@@ -81,24 +110,28 @@ class BasePage:
         element = self.wait_for_element_clickable(locator, timeout)
         browser_name = self.driver.capabilities.get('browserName', '').lower()
         
+        self.scroll_to_element(element)
+        
         if browser_name == 'firefox':
-            try:
-                ActionChains(self.driver).move_to_element(element).click().perform()
-                return
-            except ElementClickInterceptedException:
-                pass
+            self.driver.execute_script("arguments[0].click();", element)
+            return
+        
         try:
             element.click()
-            return
         except ElementClickInterceptedException:
-            pass
-        self.driver.execute_script("arguments[0].click();", element)
+            self.driver.execute_script("arguments[0].click();", element)
+
+    def click_element_safely(self, element):
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", element)
 
     def click_and_wait_tab_active(self, locator, timeout=10):
         tab = self.wait_for_element_clickable(locator, timeout)
         try:
             tab.click()
-        except Exception:
+        except ElementClickInterceptedException:
             self.driver.execute_script("arguments[0].click();", tab)
 
         self.wait_until(

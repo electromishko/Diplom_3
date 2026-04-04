@@ -29,16 +29,9 @@ class ForgotPasswordPage(BasePage):
        
     def toggle_password_visibility(self):
         button = self.wait_for_element_clickable(ForgotPasswordPageLocators.SHOW_PASSWORD_BUTTON, timeout=5)
-        try:
-            button.click()
-        except:
-            self.driver.execute_script("arguments[0].click();", button)
-        return self
+        self.click_element_safely(button)
 
     def submit(self):
         self.wait_for_element_invisible(ForgotPasswordPageLocators.MODAL_OVERLAY, timeout=5)
         button = self.wait_for_element_clickable(ForgotPasswordPageLocators.SUBMIT_BUTTON)
-        try:
-            button.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", button)
+        self.click_element_safely(button)

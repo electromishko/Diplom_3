@@ -1,52 +1,45 @@
-from pages.main_page import MainPage
-from pages.login_page import LoginPage
-from pages.register_page import RegisterPage
-from utils.user_generator import generate_user
-from locators.login_page_locators import LoginPageLocators
-
-import pytest
 import allure
-
-
-@pytest.fixture
-def authorized_user(driver):
-    user = generate_user()
-
-    register_page = RegisterPage(driver)
-    register_page.open()
-    register_page.register(user["name"], user["email"], user["password"])
-
-    login_page = LoginPage(driver)
-    login_page.open()
-    login_page.login(user["email"], user["password"])
-
-    return user
 
 
 class TestProfilePage:
     @allure.title("Переход в профиль")
-    def test_open_profile_page(self, driver, authorized_user):
-        main_page = MainPage(driver)
-
-        profile_page = main_page.go_to_profile()
-
-        assert profile_page.wait_for_profile_load() is not None
+    def test_open_profile_page(self, main_page, authorized_user):
+        with allure.step("Кликнуть по кнопке аккаунта"):
+            main_page.click_account_button()
+        
+        with allure.step("Создать объект страницы профиля и дождаться загрузки"):
+            profile_page = main_page.get_profile_page()
+            profile_page.wait_for_profile_load()
+        
+        with allure.step("Проверить, что страница профиля открыта"):
+            assert profile_page.is_profile_opened()
 
     @allure.title("Переход в историю заказов")
-    def test_go_to_order_history(self, driver, authorized_user):
-        main_page = MainPage(driver)
-
-        profile_page = main_page.go_to_profile()
-        history_page = profile_page.go_to_order_history()
-
-        assert history_page.wait_for_page_load()
+    def test_go_to_order_history(self, main_page, authorized_user):
+        with allure.step("Кликнуть по кнопке аккаунта"):
+            main_page.click_account_button()
+        
+        with allure.step("Создать объект страницы профиля и дождаться загрузки"):
+            profile_page = main_page.get_profile_page()
+            profile_page.wait_for_profile_load()
+        
+        with allure.step("Перейти в историю заказов"):
+            profile_page.go_to_order_history()
+        
+        with allure.step("Проверить, что страница истории заказов открыта"):
+            assert profile_page.is_order_history_opened()
 
     @allure.title("Выход из аккаунта")
-    def test_logout(self, driver, authorized_user):
-        main_page = MainPage(driver)
+    def test_logout(self, main_page, authorized_user):
+        with allure.step("Кликнуть по кнопке аккаунта"):
+            main_page.click_account_button()
         
-        profile_page = main_page.go_to_profile()
-        login_page = profile_page.logout()
-
-        assert login_page.wait_for_element_visible(LoginPageLocators.EMAIL_INPUT, timeout=10), \
-            "Страница логина не загрузилась после выхода"
+        with allure.step("Создать объект страницы профиля и дождаться загрузки"):
+            profile_page = main_page.get_profile_page()
+            profile_page.wait_for_profile_load()
+        
+        with allure.step("Нажать кнопку выхода"):
+            profile_page.click_logout()
+        
+        with allure.step("Проверить, что страница логина открыта"):
+            assert profile_page.is_login_page_opened()

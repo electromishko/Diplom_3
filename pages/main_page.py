@@ -9,20 +9,8 @@ import allure
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-class Tabs:
-    BUNS = "buns"
-    SAUCES = "sauces"
-    FILLINGS = "fillings"
-
-
 class MainPage(BasePage):
-
-    TAB_LOCATORS = {
-        Tabs.BUNS: MainPageLocators.BUN_TAB,
-        Tabs.SAUCES: MainPageLocators.SAUCE_TAB,
-        Tabs.FILLINGS: MainPageLocators.FILLING_TAB,
-    }
-   
+  
     def open(self):
         from data.urls import Urls
         self.driver.get(Urls.BASE_URL)
@@ -48,7 +36,7 @@ class MainPage(BasePage):
         return self.wait_for_element_visible(LoginPageLocators.LOGIN_BUTTON)
 
     def create_order(self):
-        self.add_ingredient("bun")
+        self.add_bun()
         self.click_create_order()
 
         number = self.get_order_number()
@@ -69,17 +57,11 @@ class MainPage(BasePage):
 
     def click_constructor_button(self):
         button = self.wait_for_element_clickable(MainPageLocators.CONSTRUCTOR_BUTTON, timeout=10)
-        try:
-            button.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", button)
+        self.click_element_safely(button)
 
     def click_feed_button(self):
         button = self.wait_for_element_clickable(MainPageLocators.FEED_LINK, timeout=10)
-        try:
-            button.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", button)
+        self.click_element_safely(button)
         self.wait_for_element_invisible(MainPageLocators.MODAL_OVERLAY, timeout=10)
 
     def is_profile_page_opened(self):
@@ -89,29 +71,20 @@ class MainPage(BasePage):
     def is_constructor_page_opened(self):
         return self.wait_for_element_visible(ConstructorPageLocators.BURGERS_PAGE)
 
-    @allure.step("Добавление компонента в заказ")
-    def add_ingredient(self, ingredient_type):
-        mapping = {
-            "bun": ConstructorPageLocators.BUN,
-            "sauce": ConstructorPageLocators.SAUCE,
-            "filling": ConstructorPageLocators.FILLING,
-        }
-        locator = mapping.get(ingredient_type)
-
-        if not locator:
-            raise ValueError(f"Unknown ingredient: {ingredient_type}")
-
-        element = self.wait_for_element_visible(locator)
+    @allure.step("Добавление булки в заказ")
+    def add_bun(self):
+        element = self.wait_for_element_visible(ConstructorPageLocators.BUN)
         self.drag_and_drop(element, ConstructorPageLocators.BASKET)
-    
 
-    def add_item_to_constructor(self, item_type):
-        if item_type == "bun":
-            self.add_bun()
-        elif item_type == "sauce":
-            self.add_sauce()
-        elif item_type == "filling":
-            self.add_filling()
+    @allure.step("Добавление соуса в заказ")
+    def add_sauce(self):
+        element = self.wait_for_element_visible(ConstructorPageLocators.SAUCE)
+        self.drag_and_drop(element, ConstructorPageLocators.BASKET)
+
+    @allure.step("Добавление начинки в заказ")
+    def add_filling(self):
+        element = self.wait_for_element_visible(ConstructorPageLocators.FILLING)
+        self.drag_and_drop(element, ConstructorPageLocators.BASKET)
 
     @allure.step("Нажать кнопку Оформить заказ")
     def click_create_order(self):
@@ -168,7 +141,7 @@ class MainPage(BasePage):
     def is_tab_active(self, locator):
         tab = self.wait_for_element_visible(locator, timeout=5)
         class_attr = tab.get_attribute("class")
-        return "tab_tab_type_current" in class_attr
+        return MainPageLocators.TAB_ACTIVE_CLASS in class_attr
     
    
     def go_to_feed(self):
@@ -180,12 +153,3 @@ class MainPage(BasePage):
         feed_page.wait_feed_loaded()
 
         return feed_page
-    
-    def go_to_profile(self):
-        self.click_account_button()
-
-        from pages.profile_page import ProfilePage
-        profile_page = ProfilePage(self.driver)
-        profile_page.wait_for_profile_load()
-
-        return profile_page

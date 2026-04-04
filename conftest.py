@@ -3,22 +3,37 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from data.urls import Urls
-from utils.user_generator import generate_user
 from pages.main_page import MainPage
+from pages.login_page import LoginPage
+from pages.forgot_password_page import ForgotPasswordPage
+from utils.user_helpers import create_and_authorize_user, generate_test_user
 
 
 @pytest.fixture
 def main_page(driver):
+    """Фикстура главной страницы"""
     return MainPage(driver)
+
+
+@pytest.fixture
+def login_page(driver):
+    return LoginPage(driver)
+
 
 @pytest.fixture
 def forgot_password_page(driver):
-    from pages.forgot_password_page import ForgotPasswordPage
     return ForgotPasswordPage(driver)
+
 
 @pytest.fixture
 def user():
-    return generate_user()
+    return generate_test_user()
+
+
+@pytest.fixture
+def authorized_user(driver, user):
+    return create_and_authorize_user(driver)
+
 
 @pytest.fixture(params=["chrome", "firefox"])
 def driver(request):
@@ -38,7 +53,7 @@ def driver(request):
         options.add_argument('--width=1920')
         options.add_argument('--height=1080')
         driver = webdriver.Firefox(options=options)
-        driver.maximize_window
+        driver.maximize_window()
 
     else:
         raise ValueError(f"Browser '{browser_name}' is not supported.")

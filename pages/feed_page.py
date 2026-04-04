@@ -24,35 +24,12 @@ class FeedPage(BasePage):
     def wait_for_order_in_feed(self, number, timeout=10):
         target = self.normalize_order_number(number)
 
-        def _find(driver):
-            cards = driver.find_elements(*FeedPageLocators.ORDER_CARD)
+        def _find(_):
+            cards = self.find_elements(FeedPageLocators.ORDER_CARD)
 
             for card in cards:
                 try:
-                    raw_text = card.text
-                    normalized = self.normalize_order_number(raw_text)
-
-                    if target in normalized:
-                        return True
-                except:
-                    continue
-            return False
-        try:
-            return self.wait_for_function(_find, timeout=timeout)
-        except:
-            return False
-        
-    def wait_for_order_in_feed(self, number, timeout=10):
-        target = self.normalize_order_number(number)
-
-        def _find(driver):
-            cards = driver.find_elements(*FeedPageLocators.ORDER_CARD)
-
-            for card in cards:
-                try:
-                    raw_text = card.text
-                    normalized = self.normalize_order_number(raw_text)
-
+                    normalized = self.normalize_order_number(card.text)
                     if target in normalized:
                         return card
                 except Exception:
@@ -60,7 +37,7 @@ class FeedPage(BasePage):
 
             return False
 
-        return self.wait_for_function(_find, timeout=timeout)
+        return self.wait_for_function(_find, timeout)      
 
     def is_modal_opened(self):
         return self.wait_for_element_visible(FeedPageLocators.ORDER_MODAL_BOX)
@@ -68,36 +45,21 @@ class FeedPage(BasePage):
     def get_modal_order_number(self):
         element = self.wait_for_element_visible(FeedPageLocators.ORDER_MODAL_NUMBER, timeout=5)
         return element.text.lstrip('#').lstrip('0')
-    
 
     def open_order_by_number(self, number):
         self.wait_feed_loaded()
         locator = (
-            "xpath",
-            f"//li[.//p[contains(text(), '{number}')]]"
+            FeedPageLocators.ORDER_NUMBER_IN_LIST[0],
+            FeedPageLocators.ORDER_NUMBER_IN_LIST[1].format(number=number)
         )
         card = self.wait_for_element_visible(locator, timeout=10)
-
-        self.driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});", card
-        )
+        self.scroll_to_element(card)
         self.wait_for_element_clickable(card)
-
-        try:
-            card.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", card)
-
-        self.wait_for_element_visible(
-            FeedPageLocators.ORDER_MODAL_NUMBER,
-            timeout=10
-        )
-
+        self.click_element_safely(card)
+        # self.wait_for_element_visible(modal_locator, timeout=10)
+        
     def is_order_modal_opened(self, number):
-        locator = (
-            "xpath",
-            f"//div[contains(@class,'Modal')]//p[contains(text(), '{number}')]"
-        )
+        locator = (FeedPageLocators.ORDER_MODAL_OPENED)
         try:
             self.wait_for_element_visible(locator, timeout=5)
             return True

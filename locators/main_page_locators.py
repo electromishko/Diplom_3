@@ -30,3 +30,6 @@ class ConstructorPageLocators:
     COUNTER_2 = (By.XPATH, "//a[contains(@href, '/ingredient/')]//p[text()='2']")
     MODAL_INGREDIENT = (By.XPATH, "//div[contains(@class, 'Modal_modal__content__')]")
     CLOSE_BUTTON = (By.XPATH, "//button[contains(@class, 'Modal_modal__close__')]")
+    BUN_TAB = (By.XPATH, "//span[text()='Булки']/parent::div")
+    SAUCE_TAB = (By.XPATH, "//span[text()='Соусы']/parent::div")
+    FILLING_TAB = (By.XPATH, "//span[text()='Начинки']/parent::div")
