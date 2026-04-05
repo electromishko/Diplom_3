@@ -5,7 +5,7 @@ from data.urls import Urls
 class ForgotPasswordPage(BasePage):
 
     def open(self):
-        self.driver.get(Urls.FORGOT_PASSWORD)
+        self.get(Urls.FORGOT_PASSWORD)
         self.wait_for_element_visible(ForgotPasswordPageLocators.EMAIL_INPUT)
 
     def enter_email(self, email):

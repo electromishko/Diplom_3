@@ -6,14 +6,11 @@ from locators.login_page_locators import LoginPageLocators
 
 import allure
 
-from selenium.webdriver.support.ui import WebDriverWait
-
-
 class MainPage(BasePage):
-  
+
     def open(self):
         from data.urls import Urls
-        self.driver.get(Urls.BASE_URL)
+        self.get(Urls.BASE_URL)
 
     def open_for_authorized(self):
         self.open()
@@ -56,12 +53,10 @@ class MainPage(BasePage):
         self.click_element(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
 
     def click_constructor_button(self):
-        button = self.wait_for_element_clickable(MainPageLocators.CONSTRUCTOR_BUTTON, timeout=10)
-        self.click_element_safely(button)
+        self.find_and_click(MainPageLocators.CONSTRUCTOR_BUTTON)
 
     def click_feed_button(self):
-        button = self.wait_for_element_clickable(MainPageLocators.FEED_LINK, timeout=10)
-        self.click_element_safely(button)
+        self.find_and_click(MainPageLocators.FEED_LINK)
         self.wait_for_element_invisible(MainPageLocators.MODAL_OVERLAY, timeout=10)
 
     def is_profile_page_opened(self):
@@ -89,40 +84,27 @@ class MainPage(BasePage):
     @allure.step("Нажать кнопку Оформить заказ")
     def click_create_order(self):
         self.wait_for_element_invisible(MainPageLocators.MODAL_OVERLAY, timeout=5)
-        button = self.wait_for_element_clickable(MainPageLocators.ORDER_BUTTON)
-        try:
-            button.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", button)
+        self.click_element(MainPageLocators.ORDER_BUTTON)
 
     @allure.step("Нажать кнопку 'Войти в аккаунт' для неавторизованного пользователя")
     def click_create_order_unauthorized(self):
-        button = self.wait_for_element_clickable(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
-        try:
-            button.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", button)
+        self.click_element(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
 
-    @allure.step("Получить номер заказа из модалыного окна")
+    @allure.step("Получить номер заказа из модального окна")
     def get_order_number(self):
-        number_element = self.wait_for_element_visible(
+        self.wait_for_element_visible(MainPageLocators.ORDER_NUMBER, timeout=15)
+
+        self.wait_until_text_not_equal(
             MainPageLocators.ORDER_NUMBER,
-            timeout=15
+            "9999",
+            timeout=10
         )
 
-        WebDriverWait(self.driver, 10).until(
-            lambda d: number_element.text.strip() != "9999"
-        )
-
-        return number_element.text.lstrip('#').lstrip('0')
+        return self.get_element_text(MainPageLocators.ORDER_NUMBER).lstrip('#').lstrip('0')
 
     def close_order_modal(self):
         self.wait_for_element_visible(MainPageLocators.MODAL_OVERLAY, timeout=10)
-        button = self.wait_for_element_clickable(MainPageLocators.CLOSE_MODAL)
-        try:
-            button.click()
-        except Exception:
-            self.driver.execute_script("arguments[0].click();", button)
+        self.click_element(MainPageLocators.CLOSE_MODAL)
         self.wait_for_element_invisible(MainPageLocators.MODAL_OVERLAY, timeout=10)
 
     def open_tab(self, tab_locator_name):
@@ -131,25 +113,20 @@ class MainPage(BasePage):
 
     def is_buns_active(self):
         return self.is_tab_active(MainPageLocators.BUN_TAB)
-    
+
     def is_sauces_active(self):
         return self.is_tab_active(MainPageLocators.SAUCE_TAB)
-    
+
     def is_fillings_active(self):
         return self.is_tab_active(MainPageLocators.FILLING_TAB)
-    
+
     def is_tab_active(self, locator):
         tab = self.wait_for_element_visible(locator, timeout=5)
         class_attr = tab.get_attribute("class")
         return MainPageLocators.TAB_ACTIVE_CLASS in class_attr
-    
-   
-    def go_to_feed(self):
-        self.wait_for_page_load(MainPageLocators.FEED_LINK)
-        self.driver.find_element(*MainPageLocators.FEED_LINK)
-        self.click_feed_button()
-        from pages.feed_page import FeedPage
-        feed_page = FeedPage(self.driver)
-        feed_page.wait_feed_loaded()
 
+    def go_to_feed(self):
+        self.click_feed_button()
+        feed_page = self.get_feed_page()
+        feed_page.wait_feed_loaded()
         return feed_page

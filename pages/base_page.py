@@ -1,7 +1,6 @@
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import ElementClickInterceptedException
 from locators.main_page_locators import MainPageLocators
 
@@ -12,6 +11,24 @@ class BasePage:
 
     def __init__(self, driver: WebDriver):
         self.driver = driver
+
+    def get(self, url):
+        self.driver.get(url)
+
+    def get_capability(self, name):
+        return self.driver.capabilities.get(name)
+    
+    def execute_js(self, script, *args):
+        return self.driver.execute_script(script, *args)
+    
+    def wait_until_text_not_equal(self, locator, text, timeout=None):
+        return WebDriverWait(self.driver, timeout or self.default_timeout).until(
+            lambda d: d.find_element(*locator).text.strip() != text
+        )
+
+    def find_and_click(self, locator, timeout=None):
+        element = self.wait_for_element_clickable(locator, timeout)
+        self.click_element_safely(element)
 
     def click_account_button(self):
         self.click_element(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
