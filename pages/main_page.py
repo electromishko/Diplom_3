@@ -3,13 +3,13 @@ from locators.main_page_locators import MainPageLocators
 from locators.main_page_locators import ConstructorPageLocators
 from locators.profile_page_locators import ProfilePageLocators
 from locators.login_page_locators import LoginPageLocators
+from data.urls import Urls
 
 import allure
 
 class MainPage(BasePage):
 
     def open(self):
-        from data.urls import Urls
         self.get(Urls.BASE_URL)
 
     def open_for_authorized(self):
